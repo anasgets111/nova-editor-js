@@ -1,6 +1,7 @@
 // Import the Nova Editor class
 import NovaEditorJS from './nova-editor';
 
+
 // Expose it for other plugins
 window.NovaEditorJS = new NovaEditorJS();
 
@@ -18,6 +19,7 @@ require('./blocks/marker');
 require('./blocks/paragraph');
 require('./blocks/raw');
 require('./blocks/table');
+require('./blocks/resizable-image');
 
 // Import the Nova field declaration
 require('./field');

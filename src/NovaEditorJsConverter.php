@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Advoor\NovaEditorJs;
 
 use Closure;
+use stdClass;
+use JsonException;
 use EditorJS\EditorJS;
+use Illuminate\Support\Str;
 use EditorJS\EditorJSException;
 use Illuminate\Support\HtmlString;
-use JsonException;
-use stdClass;
 
 class NovaEditorJsConverter
 {
@@ -43,12 +44,15 @@ class NovaEditorJsConverter
      */
     public function generateHtmlOutput(mixed $data): HtmlString
     {
+        $data = NovaEditorJsData::generateTemporaryUrls($data);
+
+
         if (empty($data) || $data == new stdClass()) {
             return new HtmlString('');
         }
 
         // Clean non-string data
-        if (! is_string($data)) {
+        if (!is_string($data)) {
             try {
                 $data = json_encode($data, JSON_THROW_ON_ERROR);
             } catch (JsonException $exception) {
@@ -64,6 +68,8 @@ class NovaEditorJsConverter
 
             // Get sanitized blocks (according to the rules from configuration)
             $blocks = $editor->getBlocks();
+
+            $blocks = $this->cleanImageUrls($blocks);
 
             $htmlOutput = '';
 
@@ -82,6 +88,21 @@ class NovaEditorJsConverter
                 "Something went wrong: {$exception->getMessage()}"
             );
         }
+    }
+
+    //Urls after passing through sanitization, include characters like "amp;" which can fail authentication
+    //of signed urls
+
+    private function cleanImageUrls($blocks)
+    {
+        return collect($blocks)->map(function ($block) {
+            if (in_array(data_get($block, 'type'), ['resizableImage', 'image'])) {
+                $imageUrl = data_get($block, 'data.file.url');
+                $cleanImageUrl = Str::replace("amp;", "", $imageUrl);
+                data_set($block, 'data.file.url', $cleanImageUrl);
+            }
+            return $block;
+        })->all();
     }
 
     /**
@@ -106,6 +127,13 @@ class NovaEditorJsConverter
 
         $this->addRender(
             'image',
+            fn ($block) => view('nova-editor-js::image', array_merge($block['data'], [
+                'classes' => $this->calculateImageClasses($block['data']),
+            ]))->render()
+        );
+
+        $this->addRender(
+            'resizableImage',
             fn ($block) => view('nova-editor-js::image', array_merge($block['data'], [
                 'classes' => $this->calculateImageClasses($block['data']),
             ]))->render()

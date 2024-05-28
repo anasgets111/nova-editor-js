@@ -31,32 +31,32 @@ export default {
         setInitialValue() {
             this.value = this.field.value;
 
-            const self = this;
+            const _this = this;
 
-            const currentContent = (typeof self.field.value === 'object')
-                ? self.field.value
-                : JSON.parse(self.field.value);
+            const currentContent = (typeof _this.field.value === 'object')
+                ? _this.field.value
+                : JSON.parse(_this.field.value);
 
             const editor = NovaEditorJS.getInstance({
                 /**
                  * Wrapper of Editor
                  */
-                holder: `editor-js-${self.field.attribute}`,
+                holder: `editor-js-${_this.field.attribute}`,
 
                 /**
                  * This Tool will be used as default
                  */
-                defaultBlock: self.field.editorSettings.initialBlock,
+                defaultBlock: _this.field.editorSettings.initialBlock,
 
                 /**
                  * Default placeholder
                  */
-                placeholder: self.field.editorSettings.placeholder,
+                placeholder: _this.field.editorSettings.placeholder,
 
                 /**
                  * Enable autofocus
                  */
-                autofocus: self.field.editorSettings.autofocus,
+                autofocus: _this.field.editorSettings.autofocus,
 
                 /**
                  * Internalization config
@@ -65,7 +65,7 @@ export default {
                     /**
                      * Text direction. If not set, uses ltr
                      */
-                    direction: (self.field.editorSettings.rtl ?? false) ? 'rtl' : 'ltr',
+                    direction: (_this.field.editorSettings.rtl ?? false) ? 'rtl' : 'ltr',
                 },
 
                 /**
@@ -82,11 +82,12 @@ export default {
 
                 },
                 onChange() {
+
                     editor.save().then((savedData) => {
-                        self.handleChange(savedData);
+                        _this.handleChange(savedData);
                     });
                 },
-            }, self.field);
+            }, _this.field);
         },
 
         /**
