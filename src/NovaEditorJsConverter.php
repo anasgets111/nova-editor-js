@@ -134,8 +134,10 @@ class NovaEditorJsConverter
 
         $this->addRender(
             'resizableImage',
-            fn ($block) => view('nova-editor-js::image', array_merge($block['data'], [
+            fn ($block) => view('nova-editor-js::resizable-image', array_merge($block['data'], [
                 'classes' => $this->calculateImageClasses($block['data']),
+                'imageBlockClasses' => $this->calculateImageBlockClasses($block['data']),
+
             ]))->render()
         );
 
@@ -188,5 +190,18 @@ class NovaEditorJsConverter
         }
 
         return implode(' ', $classes);
+    }
+
+    protected function calculateImageBlockClasses($blockData)
+    {
+        if (data_get($blockData, 'align') == 'center') {
+            return "flex justify-center";
+        }
+
+        if (data_get($blockData, 'align') == 'right') {
+            return "flex justify-end";
+        }
+
+        return "flex justify-start";
     }
 }
