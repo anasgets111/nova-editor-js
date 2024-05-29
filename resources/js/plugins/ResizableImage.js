@@ -1,4 +1,5 @@
 import SimpleImage from '@editorjs/image';
+import './index.css';
 
 import {
     IconAddBorder,
@@ -8,13 +9,17 @@ import {
     IconAlignLeft,
     IconAlignCenter,
     IconAlignRight,
-    IconFile
+    IconFile,
 } from '@codexteam/icons';
 
 export default class ResizableImage extends SimpleImage {
     constructor({ data, config, api, readOnly }) {
         super({ data, config, api, readOnly });
-        this.config.uniqueId = config.uniqueId;
+
+        this.additionalData = {};
+        this.additionalData.width = data.width;
+        this.additionalData.height = data.height;
+        this.additionalData.align = data.align;
     }
 
     static get toolbox() {
@@ -32,7 +37,8 @@ export default class ResizableImage extends SimpleImage {
                 title: 'Align Left',
                 toggle: true,
                 action: (name, blockElement) => {
-                    blockElement.className = '.cdx-block image-tool image-tool--filled flex flex justify-start';
+                    this._alignLeft(blockElement);
+                    this._data.align = 'left';
                 },
             },
             {
@@ -41,8 +47,8 @@ export default class ResizableImage extends SimpleImage {
                 title: 'Align Center',
                 toggle: false,
                 action: (name, blockElement) => {
-                    blockElement.className = '.cdx-block image-tool image-tool--filled flex flex justify-center';
-
+                    this._alignCenter(blockElement);
+                    this._data.align = 'center';
                 },
             },
             {
@@ -51,8 +57,8 @@ export default class ResizableImage extends SimpleImage {
                 title: 'Align Right',
                 toggle: false,
                 action: (name, blockElement) => {
-                    blockElement.className = '.cdx-block image-tool image-tool--filled flex flex justify-end';
-
+                    this._alignRight(blockElement);
+                    this._data.align = 'right';
                 },
             },
         ];
@@ -61,18 +67,71 @@ export default class ResizableImage extends SimpleImage {
     render() {
         const nodes = super.render();
         this.blockElement = nodes;
-        const caption = nodes.querySelector('.image-tool__caption');
-        caption.remove();
-        const imageParent = nodes.querySelector('.image-tool__image');
-        imageParent.style.resize = 'horizontal';
-        imageParent.style.overflow = 'hidden';
-        imageParent.style['max-width'] = '100%';
-        imageParent.style['max-height'] = '100%';
-        
-        console.log(nodes);
-        console.log("render");
+
+        this._removeCaption();
+        this._alignImage(nodes);
+        this._prepareImageForResize();
 
         return nodes;
+    }
+
+    _removeCaption() {
+        const caption = this.blockElement.querySelector('.image-tool__caption');
+        caption.remove();
+    }
+
+    _prepareImageForResize() {
+        const imageParent = this.blockElement.querySelector('.image-tool__image');
+
+        imageParent.style.resize = 'both';
+        imageParent.style['max-width'] = '100%';
+        imageParent.style['max-height'] = '100%';
+
+        if (this.additionalData.width) {
+            imageParent.style.width = this.additionalData.width + 'px';
+        }
+
+        if (this.additionalData.height) {
+            imageParent.style.height = this.additionalData.height + 'px';
+        }
+
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                const { width, height } = entry.contentRect;
+                this._data.width = Math.round(width);
+                this._data.height = Math.round(height);
+            }
+        });
+
+        resizeObserver.observe(imageParent);
+    }
+
+    _alignImage(blockElement) {
+        if (!this.additionalData.align) {
+            return;
+        }
+
+        if (this.additionalData.align == 'center') {
+            return this._alignCenter(blockElement);
+        }
+
+        if (this.additionalData.align == 'right') {
+            return this._alignRight(blockElement);
+        }
+
+        return this._alignLeft(blockElement);
+    }
+
+    _alignLeft(blockElement) {
+        blockElement.className = '.cdx-block image-tool image-tool--filled flex flex justify-start';
+    }
+
+    _alignCenter(blockElement) {
+        blockElement.className = '.cdx-block image-tool image-tool--filled flex flex justify-center';
+    }
+
+    _alignRight(blockElement) {
+        blockElement.className = '.cdx-block image-tool image-tool--filled flex flex justify-end';
     }
 
     renderSettings() {
@@ -90,17 +149,14 @@ export default class ResizableImage extends SimpleImage {
                 // Handle toggle or custom action
                 if (typeof tune.action === 'function') {
                     tune.action(tune.name, _this.blockElement);
-                    _this.tuneToggled(tune.name);
-
+                    // _this.tuneToggled(tune.name);
                 } else {
                     _this.tuneToggled(tune.name);
                 }
-
             });
 
             tunes.appendChild(tuneElement);
         });
-
 
         return tunes;
     }
