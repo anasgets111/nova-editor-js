@@ -123,19 +123,22 @@ export default class ResizableImage extends SimpleImage {
     }
 
     _alignLeft(blockElement) {
-        blockElement.className = '.cdx-block image-tool image-tool--filled flex flex justify-start';
+        blockElement.classList.remove('flex', 'justify-center', 'justify-end');
+        blockElement.classList.add('flex', 'justify-start');
     }
 
     _alignCenter(blockElement) {
-        blockElement.className = '.cdx-block image-tool image-tool--filled flex flex justify-center';
+        blockElement.classList.remove('flex', 'justify-start', 'justify-end');
+        blockElement.classList.add('flex', 'justify-center');
     }
 
     _alignRight(blockElement) {
-        blockElement.className = '.cdx-block image-tool image-tool--filled flex flex justify-end';
+        blockElement.classList.remove('flex', 'justify-start', 'justify-center');
+        blockElement.classList.add('flex', 'justify-end');
     }
 
     renderSettings() {
-        const tunes = super.renderSettings();
+        const tunes = document.createElement('div');
         let _this = this;
         this.additionalTunes.forEach(function (tune) {
             const tuneElement = document.createElement('button');
