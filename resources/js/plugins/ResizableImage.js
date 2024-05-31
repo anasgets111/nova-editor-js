@@ -38,7 +38,6 @@ export default class ResizableImage extends SimpleImage {
                 toggle: true,
                 action: (name, blockElement) => {
                     this._alignLeft(blockElement);
-                    this._data.align = 'left';
                 },
             },
             {
@@ -48,7 +47,6 @@ export default class ResizableImage extends SimpleImage {
                 toggle: false,
                 action: (name, blockElement) => {
                     this._alignCenter(blockElement);
-                    this._data.align = 'center';
                 },
             },
             {
@@ -58,7 +56,6 @@ export default class ResizableImage extends SimpleImage {
                 toggle: false,
                 action: (name, blockElement) => {
                     this._alignRight(blockElement);
-                    this._data.align = 'right';
                 },
             },
         ];
@@ -107,10 +104,6 @@ export default class ResizableImage extends SimpleImage {
     }
 
     _alignImage(blockElement) {
-        if (!this.additionalData.align) {
-            return;
-        }
-
         if (this.additionalData.align == 'center') {
             return this._alignCenter(blockElement);
         }
@@ -125,16 +118,19 @@ export default class ResizableImage extends SimpleImage {
     _alignLeft(blockElement) {
         blockElement.classList.remove('flex', 'justify-center', 'justify-end');
         blockElement.classList.add('flex', 'justify-start');
+        this._data.align = 'left';
     }
 
     _alignCenter(blockElement) {
         blockElement.classList.remove('flex', 'justify-start', 'justify-end');
         blockElement.classList.add('flex', 'justify-center');
+        this._data.align = 'center';
     }
 
     _alignRight(blockElement) {
         blockElement.classList.remove('flex', 'justify-start', 'justify-center');
         blockElement.classList.add('flex', 'justify-end');
+        this._data.align = 'right';
     }
 
     renderSettings() {

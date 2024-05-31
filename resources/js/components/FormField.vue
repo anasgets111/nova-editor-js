@@ -1,93 +1,54 @@
 <template>
-    <DefaultField
-        :field="field"
-        :errors="errors"
-        :show-help-text="showHelpText"
-        :full-width-content="true"
-        @keydown.stop
-    >
+    <DefaultField :field="field" :errors="errors" :show-help-text="showHelpText" :full-width-content="true" @keydown.stop>
         <template #field>
-            <div
-                :id="`editor-js-${field.attribute}`"
-                ref="input"
-                class="editor-js"
-            />
+            <div :id="`editor-js-${field.attribute}`" ref="input" class="editor-js" />
+            <SelectPlaceholdersModal
+                v-if="placeholderPopup"
+                label="Select Placeholder"
+                selected-resource="users"
+                :field-placeholders="fieldPlaceholders"
+                :global-placeholders="globalPlaceholders"
+                @insert-placeholder="insertPlaceholder"
+                @cancel="closePlaceholderPopup"
+            ></SelectPlaceholdersModal>
         </template>
     </DefaultField>
 </template>
 
 <script>
-import { FormField, HandlesValidationErrors } from 'laravel-nova';
+import { DependentFormField, HandlesValidationErrors } from 'laravel-nova';
+import initializesEditorJs from './../mixins/initializesEditorJs';
+import HasPlaceholders from './../mixins/HasPlaceholders';
 
 export default {
-    mixins: [FormField, HandlesValidationErrors],
+    mixins: [DependentFormField, HandlesValidationErrors, initializesEditorJs, HasPlaceholders],
 
     props: ['resourceName', 'resourceId', 'field'],
 
+    data() {
+        return {
+            placeholderPopup: false,
+            editableElement: null,
+            editableElementCaretPosition: null,
+            fieldPlaceholders: {},
+            globalPlaceholders: {},
+        };
+    },
+
+    watch: {
+        // Note: only simple paths. Expressions are not supported.
+        'currentField.documentResource'(newResource) {
+            this.fetchFieldPlaceholders(newResource);
+        },
+    },
+
     methods: {
         /*
-             * Set the initial, internal value for the field.
-             */
+         * Set the initial, internal value for the field.
+         */
         setInitialValue() {
-            this.value = this.field.value;
-
-            const _this = this;
-
-            const currentContent = (typeof _this.field.value === 'object')
-                ? _this.field.value
-                : JSON.parse(_this.field.value);
-
-            const editor = NovaEditorJS.getInstance({
-                /**
-                 * Wrapper of Editor
-                 */
-                holder: `editor-js-${_this.field.attribute}`,
-
-                /**
-                 * This Tool will be used as default
-                 */
-                defaultBlock: _this.field.editorSettings.initialBlock,
-
-                /**
-                 * Default placeholder
-                 */
-                placeholder: _this.field.editorSettings.placeholder,
-
-                /**
-                 * Enable autofocus
-                 */
-                autofocus: _this.field.editorSettings.autofocus,
-
-                /**
-                 * Internalization config
-                 */
-                i18n: {
-                    /**
-                     * Text direction. If not set, uses ltr
-                     */
-                    direction: (_this.field.editorSettings.rtl ?? false) ? 'rtl' : 'ltr',
-                },
-
-                /**
-                 * Initial Editor data
-                 */
-                data: currentContent,
-
-                /**
-                 * Min height of editor
-                 */
-                minHeight: 35,
-
-                onReady() {
-
-                },
-                onChange() {
-
-                    editor.save().then((savedData) => {
-                        _this.handleChange(savedData);
-                    });
-                },
-            }, _this.field);
+            this.value = this.currentField.value;
+            this.initializeEditorJs();
         },
 
         /**
@@ -95,15 +56,15 @@ export default {
          */
         fill(formData) {
             const value = typeof this.value === 'string' ? this.value : JSON.stringify(this.value);
-            formData.append(this.field.attribute, value || '');
+            formData.append(this.currentField.attribute, value || '');
         },
+    },
 
-        /**
-         * Update the field's internal value.
-         */
-        handleChange(value) {
-            this.value = JSON.stringify(value);
-        },
+    created() {
+        this.fetchGlobalPlaceholders();
+        if (this.currentField.documentResource) {
+            this.fetchFieldPlaceholders(this.currentField.documentResource);
+        }
     },
 };
 </script>
