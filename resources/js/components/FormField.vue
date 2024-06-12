@@ -5,7 +5,7 @@
             <SelectPlaceholdersModal
                 v-if="placeholderPopup"
                 label="Select Placeholder"
-                selected-resource="users"
+                :selected-resource="currentField.documentResource"
                 :field-placeholders="fieldPlaceholders"
                 :global-placeholders="globalPlaceholders"
                 @insert-placeholder="insertPlaceholder"

@@ -1,6 +1,7 @@
 import { IconPlus } from '@codexteam/icons';
 
 export default {
+
     methods: {
         initializeEditorJs() {
             const _this = this;
@@ -50,10 +51,15 @@ export default {
                     minHeight: 35,
 
                     onReady() {
-                        _this.attachPlaceholderTool();
+                        _this.$nextTick(() => {
+                            _this.attachPlaceholderTool();
+                          });
                     },
                     onChange() {
                         editor.save().then((savedData) => {
+                            _this.$nextTick(() => {
+                                _this.attachPlaceholderTool();
+                              });
                             _this.handleChange(savedData);
                         });
                     },
@@ -73,27 +79,31 @@ export default {
             const _this = this;
             const editableElements = document.querySelectorAll('[contenteditable="true"]');
             editableElements.forEach(function (editableElement) {
+                if (editableElement.nextElementSibling && editableElement.nextElementSibling.classList.contains('sys-placeholder-tool')) {
+                    return;
+                }
+                
                 const container = document.createElement('div');
                 container.classList.add('flex', 'items-center', 'gap-2');
                 const plusElement = document.createElement('div');
                 plusElement.innerHTML = IconPlus;
                 plusElement.style.display = 'none';
-                plusElement.className = 'border-2 rounded-2xl text-primary-500 hover:bg-primary-400 hover:text-white font-bold';
-
+                plusElement.className = 'sys-placeholder-tool border-2 rounded-2xl text-primary-500 hover:bg-primary-400 hover:text-white font-bold';
+    
                 editableElement.parentElement.appendChild(container);
                 container.appendChild(editableElement);
                 container.appendChild(plusElement);
-
+    
                 plusElement.classList.add('cursor-pointer');
-
+    
                 editableElement.addEventListener('focus', function () {
                     plusElement.style.display = 'block';
                 });
-
+    
                 editableElement.addEventListener('blur', function () {
                     plusElement.style.display = 'none';
                 });
-
+    
                 plusElement.addEventListener('mousedown', function (event) {
                     event.preventDefault();
                     _this.openPlaceholderPopup(editableElement);
