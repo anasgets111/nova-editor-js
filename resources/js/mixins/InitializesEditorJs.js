@@ -79,6 +79,7 @@ export default {
             const _this = this;
             const editableElements = document.querySelectorAll('[contenteditable="true"]');
             editableElements.forEach(function (editableElement) {
+                editableElement.classList.add('w-full');
                 if (editableElement.nextElementSibling && editableElement.nextElementSibling.classList.contains('sys-placeholder-tool')) {
                     return;
                 }

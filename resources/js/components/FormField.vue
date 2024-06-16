@@ -6,7 +6,6 @@
                 v-if="placeholderPopup"
                 label="Select Placeholder"
                 :selected-resource="currentField.documentResource"
-                :field-placeholders="fieldPlaceholders"
                 :global-placeholders="globalPlaceholders"
                 @insert-placeholder="insertPlaceholder"
                 @cancel="closePlaceholderPopup"
@@ -30,16 +29,8 @@ export default {
             placeholderPopup: false,
             editableElement: null,
             editableElementCaretPosition: null,
-            fieldPlaceholders: {},
             globalPlaceholders: {},
         };
-    },
-
-    watch: {
-        // Note: only simple paths. Expressions are not supported.
-        'currentField.documentResource'(newResource) {
-            this.fetchFieldPlaceholders(newResource);
-        },
     },
 
     methods: {
@@ -58,13 +49,6 @@ export default {
             const value = typeof this.value === 'string' ? this.value : JSON.stringify(this.value);
             formData.append(this.currentField.attribute, value || '');
         },
-    },
-
-    created() {
-        this.fetchGlobalPlaceholders();
-        if (this.currentField.documentResource) {
-            this.fetchFieldPlaceholders(this.currentField.documentResource);
-        }
     },
 };
 </script>

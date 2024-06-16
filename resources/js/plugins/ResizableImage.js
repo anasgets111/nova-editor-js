@@ -98,6 +98,10 @@ export default class ResizableImage extends SimpleImage {
                 this._data.width = Math.round(width);
                 this._data.height = Math.round(height);
             }
+
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
         });
 
         resizeObserver.observe(imageParent);
