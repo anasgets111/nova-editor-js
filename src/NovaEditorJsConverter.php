@@ -1,16 +1,16 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Advoor\NovaEditorJs;
 
 use Closure;
-use stdClass;
-use JsonException;
 use EditorJS\EditorJS;
-use Illuminate\Support\Str;
 use EditorJS\EditorJSException;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
+use JsonException;
+use stdClass;
 
 class NovaEditorJsConverter
 {
@@ -45,7 +45,6 @@ class NovaEditorJsConverter
     public function generateHtmlOutput(mixed $data): HtmlString
     {
         $data = NovaEditorJsData::generateTemporaryUrls($data);
-
 
         if (empty($data) || $data == new stdClass()) {
             return new HtmlString('');
@@ -98,9 +97,10 @@ class NovaEditorJsConverter
         return collect($blocks)->map(function ($block) {
             if (in_array(data_get($block, 'type'), ['resizableImage', 'image'])) {
                 $imageUrl = data_get($block, 'data.file.url');
-                $cleanImageUrl = Str::replace("amp;", "", $imageUrl);
+                $cleanImageUrl = Str::replace('amp;', '', $imageUrl);
                 data_set($block, 'data.file.url', $cleanImageUrl);
             }
+
             return $block;
         })->all();
     }
@@ -137,7 +137,6 @@ class NovaEditorJsConverter
             fn ($block) => view('nova-editor-js::resizable-image', array_merge($block['data'], [
                 'classes' => $this->calculateImageClasses($block['data']),
                 'imageBlockClasses' => $this->calculateImageBlockClasses($block['data']),
-
             ]))->render()
         );
 
@@ -178,11 +177,13 @@ class NovaEditorJsConverter
     }
 
     /**
+     * @param mixed $blockData
      * @return string
      */
     protected function calculateImageClasses($blockData)
     {
         $classes = [];
+
         foreach ($blockData as $key => $data) {
             if (is_bool($data) && $data === true) {
                 $classes[] = $key;
@@ -195,13 +196,13 @@ class NovaEditorJsConverter
     protected function calculateImageBlockClasses($blockData)
     {
         if (data_get($blockData, 'align') == 'center') {
-            return "flex justify-center";
+            return 'flex justify-center';
         }
 
         if (data_get($blockData, 'align') == 'right') {
-            return "flex justify-end";
+            return 'flex justify-end';
         }
 
-        return "flex justify-start";
+        return 'flex justify-start';
     }
 }

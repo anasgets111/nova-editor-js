@@ -1,26 +1,24 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Advoor\NovaEditorJs\Http\Controllers;
 
-use finfo;
-use Spatie\Image\Image;
-use App\Tools\TemporaryUrl;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\URL;
-use App\Tools\TemporaryUrlGenerator;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Client\RequestException;
-use Illuminate\Http\Client\ConnectionException;
-use Spatie\Image\Exceptions\InvalidManipulation;
 use Advoor\NovaEditorJs\Events\EditorJsImageUploaded;
 use Advoor\NovaEditorJs\Events\EditorJsThumbnailCreated;
+use App\Tools\TemporaryUrl;
+use finfo;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Validator;
+use Spatie\Image\Exceptions\InvalidManipulation;
+use Spatie\Image\Image;
 
 class EditorJsImageUploadController extends Controller
 {
@@ -53,7 +51,6 @@ class EditorJsImageUploadController extends Controller
             $disk
         );
 
-
         if ($disk !== 'local') {
             $tempPath = $request->file('image')->store(
                 config('nova-editor-js.toolSettings.image.path'),
@@ -71,6 +68,7 @@ class EditorJsImageUploadController extends Controller
         }
 
         event(new EditorJsImageUploaded($disk, $path));
+
         return response()->json([
             'success' => 1,
             'file' => [
@@ -79,9 +77,6 @@ class EditorJsImageUploadController extends Controller
             ],
         ]);
     }
-
-    
-
 
     /**
      * "Upload" a URL.
@@ -111,7 +106,8 @@ class EditorJsImageUploadController extends Controller
 
         // Validate mime type
         $mime = (new finfo())->buffer($response->body(), FILEINFO_MIME_TYPE);
-        if (!in_array($mime, self::VALID_IMAGE_MIMES, true)) {
+
+        if (! in_array($mime, self::VALID_IMAGE_MIMES, true)) {
             return response()->json([
                 'success' => 0,
             ]);
@@ -199,6 +195,7 @@ class EditorJsImageUploadController extends Controller
     // }
 
     /**
+     * @param mixed $path
      * @return array
      */
     private function applyThumbnails($path)
@@ -229,7 +226,6 @@ class EditorJsImageUploadController extends Controller
                 event(new EditorJsThumbnailCreated(config('nova-editor-js.toolSettings.image.disk'), $newThumbnailPath));
 
                 $generatedThumbnails[] = TemporaryUrl::make($path, $expirationInMinutes = 60, config('nova-editor-js.toolSettings.image.disk'))->generate();
-
             }
         }
 
